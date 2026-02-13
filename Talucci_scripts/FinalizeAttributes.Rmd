@@ -1,0 +1,166 @@
+---
+title: "Final Attributes"
+author: "Anna Talucci"
+date: "2024-03-27"
+output: html_document
+---
+
+```{r clear environment, include=FALSE}
+rm(list=ls())
+```
+
+# Overview
+
+Finalize attributes
+
+
+# Packages
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ggpubr)
+library(ggnewscale)
+library(ggthemes)
+```
+
+
+# Data
+
+```{r}
+datasetEst = read_csv("../data/dataset/FireAltEstimated.csv")
+```
+
+```{r}
+datasetEst
+```
+
+
+```{r}
+names(datasetEst)
+```
+
+```{r}
+unique(datasetEst$submitNm)
+```
+
+```{r}
+sort(unique(datasetEst$resName))
+```
+```{r}
+datasetEst %>% filter(resName=="Arctic coastal tundra")
+```
+```{r}
+( rocha = datasetEst %>% filter(submitNm=="Rocha") )
+rocha %>% filter(siteId=="Anaktuvuk River fire")
+unique(rocha$fireYr)
+datasetEst %>% filter(msrDepth>250)
+```
+
+# Final clean up
+
+## Fix fire year and unburned for specific site
+```{r}
+datasetEst$fireYr[datasetEst$siteId == "Anaktuvuk River fire"] <- 2007
+datasetEst$fireYr[datasetEst$siteId == "Jones Old Burn"] <- 1900
+datasetEst$distur[datasetEst$siteId == "lutose_unburn"] <- "unburned"
+```
+
+```{r}
+datasetEst %>% filter(siteId == "Jones Old Burn")
+```
+```{r}
+(p5 = datasetEst %>% filter(paired == "p5") )
+unique(p5$resName)
+```
+
+## Add Time since fire 
+0-3 years after fire, then 4-10 years, then 11 to 20, then 21 to 40, and then >41 years
+
+```{r}
+( datasetEst1 = datasetEst %>% 
+  dplyr::select(plotId:resRealm, permaCombo:permaRelict, estDoy, estDepth) %>% 
+  mutate(tsf = year-fireYr) %>%
+    mutate(tsfClass = ifelse(tsf %in% 0:3, "0-3",
+                                     ifelse(tsf %in% 4:10, "4-10",
+                                            ifelse(tsf %in% 11:20, "11-20",
+                                                   ifelse(tsf %in% 21:40, "21-40", ">40")))))
+)
+
+```
+
+```{r}
+(p5 = datasetEst1 %>% filter(paired == "p5") )
+unique(p5$resName)
+```
+
+## Update TSF for unburned
+
+```{r}
+datasetEst1$tsf[datasetEst1$distur == "unburned"] <- "u"
+datasetEst1$tsfClass[datasetEst1$distur == "unburned"] <- "unburned"
+datasetEst1$resName[datasetEst1$paired == "p5"] <- "Arctic foothills tundra" # convert the 200 pts showing up as Arctic Coastal Tundra to Arctic Foothills Tundra due to pairing; inspected on map to make this decsion
+```
+
+```{r}
+datasetEst1 %>% filter(paired=="p5")
+```
+
+```{r}
+unique(datasetEst1$tsf)
+unique(datasetEst1$tsfClass)
+```
+
+```{r}
+datasetEst1 %>% filter(if_any(tsf, is.na))
+```
+
+# Select final columns of interest
+
+```{r}
+( datasetEst2 = datasetEst1 %>%
+  dplyr::select(plotId:msrDepth, estDoy:tsf, tsfClass, resBiomeNm, resName, permaExtent) %>%
+    rename(resBiome = resBiomeNm)
+)
+```
+
+# Final Checks
+
+```{r}
+sort(unique(datasetEst2$resName))
+```
+```{r}
+unique(sort(datasetEst2$lastNm))
+
+datasetEst2 %>% group_by(lastNm, submitNm) %>% summarize(count = n())
+```
+
+```{r}
+min(datasetEst2$year)
+max(datasetEst2$year)
+```
+```{r}
+(natali = datasetEst2 %>% filter(submitNm=="Natali") )
+unique(natali$siteId)
+```
+
+# Final data cube
+
+```{r}
+write_csv(datasetEst2, '../outputs/dataset/FireALTdataset.csv')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

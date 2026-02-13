@@ -1,0 +1,157 @@
+---
+title: "Dataset spatial adds"
+author: "Anna Talucci"
+date: "2024-01-31"
+output: html_document
+---
+
+```{r clear environment, include=FALSE}
+rm(list=ls())
+```
+
+
+# Overview
+
+
+Add Ecozones to points.
+
+Publically available data for download used here:
+[Resolve Ecoregions](https://ecoregions.appspot.com/)
+[Resolve Ecoregions for download](https://hub.arcgis.com/datasets/37ea320eebb647c6838c23f72abae5ef/explore)
+
+# Packages
+
+```{r}
+library(tidyverse)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(RColorBrewer)
+library(cowplot)
+library(ggpubr)
+library(ggnewscale)
+```
+
+# Projection
+[Some projection info]https://nsidc.org/data/user-resources/help-center/guide-nsidcs-polar-stereographic-projection)
+
+```{r}
+polarProj = "+proj=stere +lat_0=90 +lat_ts=70 +lon_0=-45 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +type=crs"
+```
+
+# Data
+
+## Dataset Points
+
+```{r}
+datasetPts = st_read("../data/dataset/PermafrostFiredataset.shp", "PermafrostFiredataset")
+```
+
+
+## Resolve
+
+```{r}
+resolve = st_read("../data/spatialData/RESOLVE_Ecoregions_and_Biomes/Biomes_and_Ecoregions_2017.shp", "Biomes_and_Ecoregions_2017")
+```
+
+```{r}
+resolve
+```
+
+## Permafrost
+
+```{r}
+permafrost = st_read("../data/spatialData/permafrost/permaice.shp", "permaice")
+```
+
+```{r}
+permafrost
+```
+
+```{r}
+permafrost_wgs = st_transform(permafrost, crs= st_crs(datasetPts))
+```
+
+```{r}
+permafrost_wgs
+```
+
+```{r}
+unique(permafrost_wgs$NUM_CODE)
+unique(permafrost_wgs$COMBO)
+unique(permafrost_wgs$RELICT)
+unique(permafrost_wgs$EXTENT)
+unique(permafrost_wgs$CONTENT)
+unique(permafrost_wgs$LANDFORM)
+```
+
+# Spatial Joins 
+
+## Select Resolve ecozones
+
+```{r}
+( resTunBor = resolve %>% 
+    filter(REALM %in% c("Palearctic", "Nearctic")) %>% 
+    dplyr::select(OBJECTID, ECO_NAME, BIOME_NUM, BIOME_NAME, REALM, ECO_ID, geometry) %>% 
+    filter(BIOME_NUM %in% c(11, 6)) %>%
+    rename(resId = OBJECTID, resName=ECO_NAME, resBiomNm = BIOME_NUM, resBiomeName = BIOME_NAME, resRealm = REALM,  resEcoId = ECO_ID)
+)
+```
+
+## Join pts to ecozones
+
+```{r}
+resPt = st_join(datasetPts, resTunBor) 
+```
+
+```{r}
+resPt
+```
+## Reproject to permafrost projection
+
+```{r}
+resPt_prj = st_transform(resPt, crs=st_crs(permafrost))
+```
+
+```{r}
+resPt_prj
+```
+
+## Join points to permafrost
+
+```{r}
+permResPt = st_join(resPt_prj, permafrost) 
+```
+
+## Rename Columns
+
+```{r}
+( permResPtRename = permResPt %>% 
+  rename(permaCode = NUM_CODE, permaCombo =COMBO , permaRelict =RELICT , permaExtent= EXTENT, permaCont = CONTENT, permaLand = LANDFORM) )
+```
+
+### Reproject to WGS
+
+```{r}
+permResPt_Wgs = st_transform(permResPtRename, crs=4326)
+```
+
+```{r}
+permResPt_Wgs
+```
+
+```{r}
+unique(permResPt_Wgs$submitNm)
+```
+```{r}
+sort(unique(permResPt_Wgs$resName))
+```
+```{r}
+permResPt_Wgs %>% filter(resName == "Arctic coastal tundra")
+```
+
+## write to shapefile
+
+```{r eval=FALSE, include=FALSE}
+st_write(permResPt_Wgs, "../outputs/spatialDataCreate/PermafrostFireEcozonedataset.shp", driver="ESRI Shapefile")
+```

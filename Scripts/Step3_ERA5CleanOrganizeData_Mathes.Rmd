@@ -1,0 +1,212 @@
+---
+title: "ERA5CleanData"
+author: "Anna Talucci"
+date: "2024-02-13"
+output: html_document
+---
+
+##Mathes edits 
+```{r clear environment, include=FALSE}
+rm(list=ls())
+```
+
+# Overview
+
+Take extracted ERA 5 data from Google Earth Engine calculate DOY to estimate (est) ALT from.
+
+ERA5 data was extract by year.
+
+# Packages
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(sf)
+library(data.table)
+```
+
+
+
+# Data
+
+## vector of data files
+```{r}
+f <- list.files(path = "/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Output/ERA5_dailyTemperature_EE_expanded/",
+                pattern = "*.csv", full.names = TRUE)
+```
+
+```{r}
+f
+```
+
+## Individual files
+```{r}
+f2001 <- read.csv(f[1], header = TRUE) 
+f2005 <- read.csv(f[2], header = TRUE) 
+f2006 <- read.csv(f[3], header = TRUE) 
+f2007 <- read.csv(f[4], header = TRUE) 
+f2008 <- read.csv(f[5], header = TRUE) 
+f2009 <- read.csv(f[6], header = TRUE) 
+f2010 <- read.csv(f[7], header = TRUE) 
+f2011 <- read.csv(f[8], header = TRUE) 
+f2012 <- read.csv(f[9], header = TRUE) 
+f2013 <- read.csv(f[10], header = TRUE) 
+f2014 <- read.csv(f[11], header = TRUE) 
+f2015 <- read.csv(f[12], header = TRUE) 
+f2016 <- read.csv(f[13], header = TRUE) 
+f2017 <- read.csv(f[14], header = TRUE) 
+f2018 <- read.csv(f[15], header = TRUE) 
+f2019 <- read.csv(f[16], header = TRUE) 
+f2020 <- read.csv(f[17], header = TRUE) 
+```
+
+## View DF
+```{r}
+f2001
+```
+```{r}
+names(f2001)
+```
+
+## Process
+1. pivot longer so column of temperature and date
+2. Group by site_id
+3. Select dates after day of thaw measurement
+4. Select only rows with temp above 0 (zero)
+5.  apply calculation
+
+"resBiomNm", "resBiomeNm", "resEcId", "resId", "resName", "resRelm", "wwfBiom", "wwfEcId", "wwfId", "wwfName", "wwfNum", "wwfRelm"  
+
+
+
+
+
+
+# Functions to clean 
+```{r}
+selectColDf = function(x)  {
+  x %>%
+    dplyr::select(plotId, siteId, cntryId, lastNm, submtNm, year, month, day, biome, distur, fireYr, paired, gtProbe, hitRock, srfH2O, topoPos, slope, vegCvr, msrDoy, msrType, msrDpth, resBiom, resName,  prmExtn, prdDpth, predDoy,  contains("temperature_2m")) %>%
+    mutate(id = row_number()) -> x
+  return(x)
+}
+```
+
+```{r}
+cleanDf = function(x)  {
+  x %>%
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "DateTemp",
+    values_to = "TempC",
+    values_drop_na = TRUE) %>% 
+  separate(DateTemp, c("tempDate", NA)) %>% 
+    mutate(plotId = as.character(plotId)) %>%
+    mutate(across(tempDate, ~ . |> str_extract("\\d+") |> as.character())) %>%
+    mutate(tempDate=ymd(tempDate)) %>%
+    mutate(TempDoy = yday(tempDate)) -> x
+  return(x)
+}
+```
+
+
+##  Apply functions to to each year
+
+### Select Column Function
+
+```{r}
+df2001 = f2001 %>% selectColDf()
+df2005 = f2005 %>% selectColDf()
+df2006 = f2006 %>% selectColDf()
+df2007 = f2007 %>% selectColDf()
+df2008 = f2008 %>% selectColDf()
+df2009 = f2009 %>% selectColDf()
+```
+
+```{r}
+df2010 = f2010 %>% selectColDf()
+df2011 = f2011 %>% selectColDf()
+df2012 = f2012 %>% selectColDf()
+df2013 = f2013 %>% selectColDf()
+df2014 = f2014 %>% selectColDf()
+```
+
+```{r}
+df2015 = f2015 %>% selectColDf()
+df2016 = f2016 %>% selectColDf()
+df2017 = f2017 %>% selectColDf()
+df2018 = f2018 %>% selectColDf()
+df2019 = f2019 %>% selectColDf()
+```
+
+```{r}
+df2020 = f2020 %>% selectColDf()
+
+```
+
+
+### Clean function
+
+Note: the warning is referencing parts of the name being discarded in the separate process. This can be ignored for these chunks of code.
+
+```{r}
+( clean2001 = df2001 %>% cleanDf() )
+```
+
+```{r}
+clean2005 = df2005 %>% cleanDf()
+clean2006 = df2006 %>% cleanDf()
+clean2007 = df2007 %>% cleanDf()
+clean2008 = df2008 %>% cleanDf()
+clean2009 = df2009 %>% cleanDf()
+```
+
+```{r}
+clean2010 = df2010 %>% cleanDf()
+clean2011 = df2011 %>% cleanDf()
+clean2012 = df2012 %>% cleanDf()
+clean2013 = df2013 %>% cleanDf()
+clean2014 = df2014 %>% cleanDf()
+```
+
+```{r}
+clean2015 = df2015 %>% cleanDf()
+clean2016 = df2016 %>% cleanDf()
+clean2017 = df2017 %>% cleanDf()
+clean2018 = df2018 %>% cleanDf()
+clean2019 = df2019 %>% cleanDf()
+```
+
+```{r}
+clean2020 = df2020 %>% cleanDf()
+
+```
+
+# Bind clean 
+
+Combine yearly data frames; rename columns that were truncated by EE. 
+
+```{r}
+(combineAll = dplyr::bind_rows(clean2001, clean2005, clean2006, clean2007, clean2008, clean2009, clean2010, clean2011, clean2012, clean2013, clean2014, clean2015, clean2016, clean2017, clean2018, clean2019, clean2020)) 
+
+
+```
+
+
+```{r}
+names(combineAll)
+```
+
+```{r}
+unique(combineAll$lastNm)
+```
+
+
+# write to csv
+
+```{r}
+write.csv(combineAll,file = "/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Output/ERA5_dailyTemperature_EE_expanded/ERA_dailyTemperature_expanded_summary.csv", row.names = FALSE)
+```
+
+
+
