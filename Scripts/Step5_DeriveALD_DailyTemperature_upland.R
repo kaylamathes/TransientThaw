@@ -14,14 +14,14 @@ library(AICcmodavg)
 
 ##Import Daily Temperature dataset (From Step 3 Rmd script)
 
-data = read.csv("TransientThaw/Output/ERA5_dailyTemperature_EE_expanded/ERA_dailyTemperature_expanded_summary.csv")%>%
+data = read.csv("Output/ERA5_dailyTemperature_EE_expanded/ERA_dailyTemperature_expanded_summary.csv")%>%
   mutate(Doy = TempDoy)
 
 ##Import predicted change in thaw depth (Assuming that reverse engineering this equation will work for differences in thaw rate)
 
-predicted_thaw_rate_difference_upland <- read.csv("TransientThaw/Output/WeibullModelOutput_upland_percentchange.csv")
+predicted_thaw_rate_difference_upland <- read.csv("Output/WeibullModelOutput_upland_percentchange.csv")
 
-predicted_thaw_rate_difference_lowland <- read.csv("TransientThaw/Output/WeibullModelOutput_lowland.csv")
+predicted_thaw_rate_difference_lowland <- read.csv("Output/WeibullModelOutput_lowland.csv")
 
 ##### Checking to see if I get the same predicted ALT depth using my summarized data and Anna's equations. Yes: They are the same! #### 
 # calc_A = function(x) {
@@ -149,60 +149,60 @@ ThawDepth_sub_upland <- ThawDepth_sub_upland%>%
   mutate(tsf = case_when(distur == "burned" ~ as.factor(year - fireYr), 
                          distur == "unburned" ~ as.factor("unburned")))
 
-###Filtering by pair and disturbance and then plotting
-#k1
-k1 <- ThawDepth_sub%>%
-  filter(paired == "k1")
-
-#m2
-m2 <- ThawDepth_sub%>%
-  filter(paired == "m2")
-
-#m3
-m3 <- ThawDepth_sub%>%
-  filter(paired == "m3")
-
-
-#l2 
-l2 <- ThawDepth_sub%>%
-  filter(paired == "l2")
-
-#f1
-f1<- ThawDepth_sub%>%
-  filter(paired == "f1")
-
-#l3
-
-l3 <- ThawDepth_sub%>%
-  filter(paired == "l3")
-
-#c1
-
-c1 <- ThawDepth_sub%>%
-  filter(paired == "c1")
-
-#######Example Plot with temperature curve (pick a random observation ID and then plot it!) #####
-##Make sure to adjust the measurement DOY/Depth and predicted DOY/depth!! (In the ggplot code) 
-
-graph_example <- ThawDepth%>%
-  filter(ID == 7700)
-
-DailyTemp <- data%>%
-  group_by(lastNm, year, msrDoy, id)%>%
-  mutate(ID = cur_group_id())%>%
-  filter(ID == 7700)
-
-ggplot()+
-  geom_point(data = graph_example, aes(x = Doy, y = ThawDepthCurrentNeg), color = "#48AAAD", size = 1) +
-  geom_point(data = DailyTemp, aes(x = Doy, y = TempC), color = "#1520A6") +
-  geom_point(aes(x = 172, y = -55), color = "darkred", size = 4) +
-  geom_point( aes(x = 260, y = -93), color = "darkred", size = 4, shape = 4) +
-  geom_hline(yintercept = 0) +
-  xlab("Day of Year") + ylab("ThawDepth (cm)") +
-  theme_classic() +
-  scale_y_continuous(sec.axis = sec_axis(~., name = "Air Temperature (C)"))
-
-ggsave("TransientThaw/Output/ThawDepthCurveExamples/Example1_O'Donnell_2005_unburned.png", height = 5, width= 8)
+# ###Filtering by pair and disturbance and then plotting
+# #k1
+# k1 <- ThawDepth_sub%>%
+#   filter(paired == "k1")
+# 
+# #m2
+# m2 <- ThawDepth_sub%>%
+#   filter(paired == "m2")
+# 
+# #m3
+# m3 <- ThawDepth_sub%>%
+#   filter(paired == "m3")
+# 
+# 
+# #l2 
+# l2 <- ThawDepth_sub%>%
+#   filter(paired == "l2")
+# 
+# #f1
+# f1<- ThawDepth_sub%>%
+#   filter(paired == "f1")
+# 
+# #l3
+# 
+# l3 <- ThawDepth_sub%>%
+#   filter(paired == "l3")
+# 
+# #c1
+# 
+# c1 <- ThawDepth_sub%>%
+#   filter(paired == "c1")
+# 
+# #######Example Plot with temperature curve (pick a random observation ID and then plot it!) #####
+# ##Make sure to adjust the measurement DOY/Depth and predicted DOY/depth!! (In the ggplot code) 
+# 
+# graph_example <- ThawDepth%>%
+#   filter(ID == 7700)
+# 
+# DailyTemp <- data%>%
+#   group_by(lastNm, year, msrDoy, id)%>%
+#   mutate(ID = cur_group_id())%>%
+#   filter(ID == 7700)
+# 
+# ggplot()+
+#   geom_point(data = graph_example, aes(x = Doy, y = ThawDepthCurrentNeg), color = "#48AAAD", size = 1) +
+#   geom_point(data = DailyTemp, aes(x = Doy, y = TempC), color = "#1520A6") +
+#   geom_point(aes(x = 172, y = -55), color = "darkred", size = 4) +
+#   geom_point( aes(x = 260, y = -93), color = "darkred", size = 4, shape = 4) +
+#   geom_hline(yintercept = 0) +
+#   xlab("Day of Year") + ylab("ThawDepth (cm)") +
+#   theme_classic() +
+#   scale_y_continuous(sec.axis = sec_axis(~., name = "Air Temperature (C)"))
+# 
+# ggsave("TransientThaw/Output/ThawDepthCurveExamples/Example1_O'Donnell_2005_unburned.png", height = 5, width= 8)
 
 ### SUMMARIZING: Creating averages across paired, disturbance, year of measure and tsf
 
@@ -211,94 +211,94 @@ ThawDepth_sub_summary_upland <- ThawDepth_sub_upland%>%
   summarize(ThawDepthCurrentNeg_ave = mean(ThawDepthCurrentNeg), TempC_ave = mean(TempC), ThawDepthCurrent_ave = mean(ThawDepthCurrent), 
             ThawDepthCurrent_max = max(ThawDepthCurrent), ThawDepthCurrent_min = min(ThawDepthCurrent))
 
-#k1
-k1_summary <- ThawDepth_sub_summary%>%
-  filter(paired == "k1")
-
-#m2
-m2_summary <- ThawDepth_sub_summary%>%
-  filter(paired == "m2")
-
-#m3
-m3_summary <- ThawDepth_sub_summary%>%
-  filter(paired == "m3")
-
-#l2 
-l2_summary <- ThawDepth_sub_summary%>%
-  filter(paired == "l2")
-
-#f1
-f1_summary<- ThawDepth_sub_summary%>%
-  filter(paired == "f1")
-
-#l3
-
-l3_summary <- ThawDepth_sub_summary%>%
-  filter(paired == "l3")
-
-#c1
-
-c1_summary <- ThawDepth_sub_summary%>%
-  filter(paired == "c1")
-
-
-ggplot()+
-  geom_point(data = k1, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
-  facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("K1 Summary")+
-  theme(legend.position = "none") + 
-  geom_smooth(data = k1_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
-ggsave("TransientThaw/Output/ThawDepthCurveExamples/k1.png", height = 5, width= 8)
-
-ggplot()+
-  geom_point(data = m2, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
-  facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("m2 Summary")+
-  theme(legend.position = "none") + 
-  geom_smooth(data = m2_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
-ggsave("TransientThaw/Output/ThawDepthCurveExamples/m2.png", height = 5, width= 8)
-
-ggplot()+
-  geom_point(data = m3, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
-  facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("m3 Summary")+
-  theme(legend.position = "none") + 
-  geom_smooth(data = m3_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
-ggsave("TransientThaw/Output/ThawDepthCurveExamples/m3.png", height = 5, width= 8)
-
-ggplot()+
-  geom_point(data = l2, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
-  facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("l2 Summary")+
-  theme(legend.position = "none") + 
-  geom_smooth(data = l2_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
-ggsave("TransientThaw/Output/ThawDepthCurveExamples/l2.png", height = 5, width= 8)
-
-ggplot()+
-  geom_point(data = f1, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
-  facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("f1 Summary")+
-  theme(legend.position = "none") + 
-  geom_smooth(data = f1_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
-ggsave("TransientThaw/Output/ThawDepthCurveExamples/f1.png", height = 8, width= 10)
-
-ggplot()+
-  geom_point(data = l3, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
-  facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("l3 Summary")+
-  theme(legend.position = "none") + 
-  geom_smooth(data = l3_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
-ggsave("TransientThaw/Output/ThawDepthCurveExamples/l3.png", height = 5, width= 8)
-
-ggplot()+
-  geom_point(data = c1, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
-  facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("c1 Summary")+
-  theme(legend.position = "none") + 
-  geom_smooth(data = c1_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
-ggsave("TransientThaw/Output/ThawDepthCurveExamples/c1.png", height = 5, width= 8)
-
-
-##Summary (average faceted by year and paired (representing the different time since disturbance pairings)
-supp.labs <- c("14", "1")
-ggplot() +
-  geom_point(data = ThawDepth_sub_summary, aes(Doy, y = ThawDepthCurrentNeg_ave, color = distur)) +
-  facet_wrap(~paired + year) +
-  xlab("Day of year") + ylab("Thaw Depth (cm)")
-ggsave("TransientThaw/Output/ThawDepthCurveExamples/Summary.png", height = 5, width= 8)
+# #k1
+# k1_summary <- ThawDepth_sub_summary%>%
+#   filter(paired == "k1")
+# 
+# #m2
+# m2_summary <- ThawDepth_sub_summary%>%
+#   filter(paired == "m2")
+# 
+# #m3
+# m3_summary <- ThawDepth_sub_summary%>%
+#   filter(paired == "m3")
+# 
+# #l2 
+# l2_summary <- ThawDepth_sub_summary%>%
+#   filter(paired == "l2")
+# 
+# #f1
+# f1_summary<- ThawDepth_sub_summary%>%
+#   filter(paired == "f1")
+# 
+# #l3
+# 
+# l3_summary <- ThawDepth_sub_summary%>%
+#   filter(paired == "l3")
+# 
+# #c1
+# 
+# c1_summary <- ThawDepth_sub_summary%>%
+#   filter(paired == "c1")
+# 
+# 
+# ggplot()+
+#   geom_point(data = k1, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
+#   facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("K1 Summary")+
+#   theme(legend.position = "none") + 
+#   geom_smooth(data = k1_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
+# ggsave("TransientThaw/Output/ThawDepthCurveExamples/k1.png", height = 5, width= 8)
+# 
+# ggplot()+
+#   geom_point(data = m2, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
+#   facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("m2 Summary")+
+#   theme(legend.position = "none") + 
+#   geom_smooth(data = m2_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
+# ggsave("TransientThaw/Output/ThawDepthCurveExamples/m2.png", height = 5, width= 8)
+# 
+# ggplot()+
+#   geom_point(data = m3, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
+#   facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("m3 Summary")+
+#   theme(legend.position = "none") + 
+#   geom_smooth(data = m3_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
+# ggsave("TransientThaw/Output/ThawDepthCurveExamples/m3.png", height = 5, width= 8)
+# 
+# ggplot()+
+#   geom_point(data = l2, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
+#   facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("l2 Summary")+
+#   theme(legend.position = "none") + 
+#   geom_smooth(data = l2_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
+# ggsave("TransientThaw/Output/ThawDepthCurveExamples/l2.png", height = 5, width= 8)
+# 
+# ggplot()+
+#   geom_point(data = f1, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
+#   facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("f1 Summary")+
+#   theme(legend.position = "none") + 
+#   geom_smooth(data = f1_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
+# ggsave("TransientThaw/Output/ThawDepthCurveExamples/f1.png", height = 8, width= 10)
+# 
+# ggplot()+
+#   geom_point(data = l3, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
+#   facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("l3 Summary")+
+#   theme(legend.position = "none") + 
+#   geom_smooth(data = l3_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
+# ggsave("TransientThaw/Output/ThawDepthCurveExamples/l3.png", height = 5, width= 8)
+# 
+# ggplot()+
+#   geom_point(data = c1, aes(x = Doy, y = ThawDepthCurrentNeg), size = 0.5) +
+#   facet_wrap(~year +distur + tsf)+ xlab("Day of Year") + ylab("Thaw Depth (cm)") +ggtitle("c1 Summary")+
+#   theme(legend.position = "none") + 
+#   geom_smooth(data = c1_summary, aes(x = Doy, y = ThawDepthCurrentNeg_ave))
+# ggsave("TransientThaw/Output/ThawDepthCurveExamples/c1.png", height = 5, width= 8)
+# 
+# 
+# ##Summary (average faceted by year and paired (representing the different time since disturbance pairings)
+# supp.labs <- c("14", "1")
+# ggplot() +
+#   geom_point(data = ThawDepth_sub_summary, aes(Doy, y = ThawDepthCurrentNeg_ave, color = distur)) +
+#   facet_wrap(~paired + year) +
+#   xlab("Day of year") + ylab("Thaw Depth (cm)")
+# ggsave("TransientThaw/Output/ThawDepthCurveExamples/Summary.png", height = 5, width= 8)
 
 ######Calculating the change in thaw depth for each day for each time since fire
 
@@ -1126,12 +1126,12 @@ library(AICcmodavg)
 
 ##Import Daily Temperature dataset (From Step 3 Rmd script)
 
-data = read.csv("TransientThaw/Output/ERA_dailyTemperature_summary.csv")%>%
+data = read.csv("Output/ERA_dailyTemperature_summary.csv")%>%
   mutate(Doy = TempDoy)
 
 ##Import predicted change in thaw depth (Assuming that reverse engineering this equation will work for differences in thaw rate)
 
-predicted_thaw_rate_difference <- read.csv("TransientThaw/Output/WeibullModelOutput_mean_ALT.csv")
+predicted_thaw_rate_difference <- read.csv("Output/WeibullModelOutput_mean_ALT.csv")
 
 
 ##### Checking to see if I get the same predicted ALT depth using my summarized data and Anna's equations. Yes: They are the same! #### 
