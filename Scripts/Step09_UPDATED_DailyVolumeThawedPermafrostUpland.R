@@ -31,13 +31,14 @@ Upland_perimeter <- merge(Upland_perimeter, Talik_perimeter, by = c("FIRENUMBER"
 
 #### Step 2: Upload the percent change daily fire-induced change in active layer percent for 50 years post-fire 
 
-########Data upload (THIS DOESN"T CHANGE)
+########Data upload (THIS DOESN"T CHANGE): Removing year 0 since start of fire because it does not make sense 
 ALD_daily_change_upland <- read.csv("Output/predicted_ALD_allDoy_upland_percentchange.csv")
 ###############
 
 
 ALD_daily_change_upland_sub <- ALD_daily_change_upland%>%
-  dplyr::select(tsf,Predicted_Doy,predicted_ALD_change)
+  dplyr::select(tsf,Predicted_Doy,predicted_ALD_change)%>%
+  filter(tsf !=0)
 
 #### Step 3: Find the daily change in baseline ALT for the ensemble perimters
 #### Add the growing season days: 100 - 271 and the non-linear relationship
@@ -55,7 +56,7 @@ ALT_baseline <- read.csv("Data/Counterfactual_ALT_Baseline/ALT_counterfactual_In
 
 ##Add time since fire columns (This will be the same for all years as the baseline) 
 ##add a list of the tsf 
-tsf <- c(0:50)
+tsf <- c(1:50)
 
 ALT_baseline_tsf <- ALT_baseline%>%
   expand(FIRENUMBER, full_seq(tsf,1))%>%
@@ -143,3 +144,42 @@ Daily_carbon_pool_kg = left_join(ALT_daily_fire_change_volume,CarbonDensity, by 
 
 Daily_carbon_pool_kg <- Daily_carbon_pool_kg%>%
   mutate(Daily_carbon_pool_kg = Daily_ALT_change_volume_m3*carbon_100)
+
+Daily_carbon_pool_kg_test <- Daily_carbon_pool_kg%>%
+  filter(FIRENUMBER == 200)%>%
+  filter(tsf == 1)%>%
+  mutate(DailyCarbonLossPercent = 0.011627907)%>%
+  mutate(DailyCarbonLoss_kg = (DailyCarbonLossPercent*Daily_carbon_pool_kg)/100)
+
+#######Step 2: Upload the Gerrevink data 
+Gerrevink <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Data/CarbonDensity/Gerrevink_percentcarbonloss.csv")
+
+###We are going to start by split up the percent annual loss into a daily percent based on the number of frost-free days (or the growing season), which is 172 to start (This might need to change)
+
+Gerrevink <- Gerrevink%>%
+  mutate(DailyPercent = percentCarbonLoss_Mineral/172)%>%
+  filter(YearsSinceFire_or_ThawInitation != 50)%>%
+  mutate(tsf = 1:50 )
+
+
+Daily_carbon_pool_kg_withloss <- left_join(Daily_carbon_pool_kg, Gerrevink, by = c("tsf"))
+
+##Calculate the daily carbon Loss 
+
+Daily_carbon_pool_kg_withloss <- Daily_carbon_pool_kg_withloss%>%
+  mutate(DailyCarbonLoss_kg = (DailyPercent*Daily_carbon_pool_kg)/100)
+
+## Summarize to annual carbon loss 
+Annual_carbon_pool_kg_withloss_summary <- Daily_carbon_pool_kg_withloss%>%
+  group_by(FIRENUMBER, tsf)%>%
+  summarize(AnnualCarbonLoss_kg = sum(DailyCarbonLoss_kg))
+
+Annualcarbon_pool_kg_withloss_summary_test <- Daily_carbon_pool_kg_withloss_summary%>%
+  filter(FIRENUMBER == 10)
+
+## Summarize to total carbon loss over 50 years 
+
+Total50yr_carbon_pool_kg_withloss_summary <- Daily_carbon_pool_kg_withloss%>%
+  group_by(FIRENUMBER)%>%
+  summarize(Total50yrCarbonLoss_kg = sum(DailyCarbonLoss_kg))
+
