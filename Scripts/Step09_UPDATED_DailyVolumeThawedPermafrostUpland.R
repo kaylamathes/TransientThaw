@@ -21,7 +21,7 @@ Upland_perimeter <- read.csv("Data/Counterfactual_landform/Landform_BrooksCreek.
   mutate(Upland_perimeter_m2 = Upland_perimeter_acres*4046.86)
 
 ###########DATA Upload (THIS DOES CHANGE)
-Talik_perimeter <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Output/Counterfactual_Talik_perimeters_V2/Intersections/Medium/Talik_perimeter_v2_BrooksCreek_medium.csv")
+Talik_perimeter <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Output/Counterfactual_Talik_perimeters_V2/Intersections/VeryHigh/Talik_perimeter_v2_BrooksCreek_VeryHigh.csv")
 ######################
 
 Upland_perimeter <- merge(Upland_perimeter, Talik_perimeter, by = c("FIRENUMBER", "SIZE_ACRES"))%>%
@@ -31,9 +31,14 @@ Upland_perimeter <- merge(Upland_perimeter, Talik_perimeter, by = c("FIRENUMBER"
 
 #### Step 2: Upload the percent change daily fire-induced change in active layer percent for 50 years post-fire 
 
-########Data upload (THIS DOESN"T CHANGE): Removing year 0 since start of fire because it does not make sense 
-ALD_daily_change_upland <- read.csv("Output/predicted_ALD_allDoy_upland_percentchange.csv")
+########Data upload (THIS DOES CHANGE): Removing year 0 since start of fire because it does not make sense 
+ALD_daily_change_upland <- read.csv("Output/UpdateWeibullPercentChange_Range/Predicted_ALD_change_upland_percentchange_max.csv")
 ###############
+
+###########DATA Upload (THIS DOES CHANGE)
+CarbonDensity <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Output/Counterfactual_CarbonDensity/BrooksCreek_CarbonDensityIntersectionTotal.csv")%>%
+  dplyr::select(FIRENUMBER, carbon_100)
+##############
 
 
 ALD_daily_change_upland_sub <- ALD_daily_change_upland%>%
@@ -133,11 +138,6 @@ ALT_daily_fire_change_volume <-  ALT_daily_fire_change_volume%>%
 ##### Daily Carbon pool vulnerable to emissions 
 
 ##Step 1: Upload the Carbon Density data (Start with the top 100 cm)
-
-###########DATA Upload (THIS DOES CHANGE)
-CarbonDensity <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Output/Counterfactual_CarbonDensity/BrooksCreek_CarbonDensityIntersectionTotal.csv")%>%
-  dplyr::select(FIRENUMBER, carbon_100)
-  
 ######################
 
 Daily_carbon_pool_kg = left_join(ALT_daily_fire_change_volume,CarbonDensity, by = ("FIRENUMBER"))
@@ -174,12 +174,14 @@ Annual_carbon_pool_kg_withloss_summary <- Daily_carbon_pool_kg_withloss%>%
   group_by(FIRENUMBER, tsf)%>%
   summarize(AnnualCarbonLoss_kg = sum(DailyCarbonLoss_kg))
 
-Annualcarbon_pool_kg_withloss_summary_test <- Daily_carbon_pool_kg_withloss_summary%>%
-  filter(FIRENUMBER == 10)
 
 ## Summarize to total carbon loss over 50 years 
 
 Total50yr_carbon_pool_kg_withloss_summary <- Daily_carbon_pool_kg_withloss%>%
   group_by(FIRENUMBER)%>%
   summarize(Total50yrCarbonLoss_kg = sum(DailyCarbonLoss_kg))
+
+median(Total50yr_carbon_pool_kg_withloss_summary$Total50yrCarbonLoss_kg)
+
+write_csv(Total50yr_carbon_pool_kg_withloss_summary,"Output/CarbonLoss/BrookCreek_High_Upland.csv")
 

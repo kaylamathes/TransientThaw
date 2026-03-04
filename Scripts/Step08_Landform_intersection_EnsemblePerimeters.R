@@ -9,21 +9,21 @@ options(scipen = 999)
 
 ##Load Data 
 #Perimeter Data
-polygons_notvalid = st_read("/Users/kmathes/Desktop/FSPro_Runs/2012_Billy Hawk Creek 2/2012_Billy_Hawk_Creek__2_FINAL_-_FUEL_EDITS_(low_prob)__RARE_CLIP_032325_FSPro_EnsemblePerimeters/2012_Billy_Hawk_Creek__2_FINAL_-_FUEL_EDITS_(low_prob)__RARE_CLIP_032325_FSPro_EnsemblePerimeters.shp")%>%
+polygons = st_read("/Users/kmathes/Desktop/FSPro_Runs/2010_TreatIsland_valid.shp")%>%
   st_transform(crs = 3338)
 
-##Find the NA valid fires 
-polygons_notvalid <- polygons_notvalid%>%
-  mutate(Valid = as.character(st_is_valid(.)))
-
-##Delete the NA valid fires 
-polygons <- polygons_notvalid%>%
-  filter(Valid == "TRUE")
+# ##Find the NA valid fires 
+# polygons_notvalid <- polygons_notvalid%>%
+#   mutate(Valid = as.character(st_is_valid(.)))
+# 
+# ##Delete the NA valid fires 
+# polygons <- polygons_notvalid%>%
+#   filter(Valid == "TRUE")
 
   
 
 # Load the Landform point csvs 
-Upland  <- read.csv("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform_classification/BillyHawkCreek_Upland.csv")
+Upland  <- read.csv("Data/Counterfactual_landform_classification/TreatIsland_Upland.csv")
   
 # Convert points to an sf object with the same CRS
 Upland_sf <- st_as_sf(Upland, coords = c("lon", "lat"), crs = 4326)
@@ -39,7 +39,7 @@ target_crs <- 32615
 Upland_sf_proj <- st_transform(Upland_sf, target_crs)
 
 # Load the Landform point csv 
-Lowland  <- read.csv("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform_classification/BillyHawkCreek_Lowland.csv")
+Lowland  <- read.csv("Data/Counterfactual_landform_classification/TreatIsland_Lowland.csv")
 
 # Convert points to an sf object with the same CRS
 Lowland_sf <- st_as_sf(Lowland, coords = c("lon", "lat"), crs = 4326)
@@ -69,14 +69,151 @@ st_as_sf()
 
 polygons_proj <- st_transform(polygons, target_crs)
 
+###### 1000
 polygons_proj_sub <- polygons_proj%>%
+  filter(FIRENUMBER >= 0 & FIRENUMBER < 1000)
+
+# --- 3. Clip the Target Polygon ---
+# Perform the intersection using the projected layers
+
+###Upland
+clipped_Upland_proj_1000 <- st_intersection(polygons_proj_sub, Upland_buffer)
+
+# (Optional) Re-project back to WGS84 for mapping or storage
+clipped_Upland_wgs84_1000 <- st_transform(clipped_Upland_proj_1000, 4326)
+
+clipped_Upland_wgs84_1000<- clipped_Upland_wgs84_1000%>%
+  mutate(Upland_area_m2 = st_area(.))%>%
+  mutate(Upland_area_acres = Upland_area_m2*0.000247105)
+
+
+st_write(clipped_Upland_wgs84_1000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_1000.gpkg", driver = "GPKG") 
+
+
+##Lowland
+
+clipped_Lowland_proj_1000 <- st_intersection(polygons_proj_sub, Lowland_buffer)
+
+clipped_Lowland_wgs84_1000 <- st_transform(clipped_Lowland_proj_1000, 4326)
+
+clipped_Lowland_wgs84_1000 <- clipped_Lowland_wgs84_1000%>%
+  mutate(Lowland_area_m2 = st_area(.))%>%
+  mutate(Lowland_area_acres = Lowland_area_m2*0.000247105)
+
+st_write(clipped_Lowland_wgs84_1000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_1000.gpkg", driver = "GPKG") 
+
+
+####2000
+polygons_proj_sub_2000 <- polygons_proj%>%
+  filter(FIRENUMBER >= 1000 & FIRENUMBER < 2000)
+
+# --- 3. Clip the Target Polygon ---
+# Perform the intersection using the projected layers
+
+###Upland
+clipped_Upland_proj_2000 <- st_intersection(polygons_proj_sub_2000, Upland_buffer)
+
+# (Optional) Re-project back to WGS84 for mapping or storage
+clipped_Upland_wgs84_2000 <- st_transform(clipped_Upland_proj_2000, 4326)
+
+clipped_Upland_wgs84_2000<- clipped_Upland_wgs84_2000%>%
+  mutate(Upland_area_m2 = st_area(.))%>%
+  mutate(Upland_area_acres = Upland_area_m2*0.000247105)
+
+
+st_write(clipped_Upland_wgs84_2000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_2000.gpkg", driver = "GPKG") 
+
+
+##Lowland
+clipped_Lowland_proj_2000 <- st_intersection(polygons_proj_sub_2000, Lowland_buffer)
+
+clipped_Lowland_wgs84_2000 <- st_transform(clipped_Lowland_proj_2000, 4326)
+
+clipped_Lowland_wgs84_2000 <- clipped_Lowland_wgs84_2000%>%
+  mutate(Lowland_area_m2 = st_area(.))%>%
+  mutate(Lowland_area_acres = Lowland_area_m2*0.000247105)
+
+st_write(clipped_Lowland_wgs84_2000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_2000.gpkg", driver = "GPKG") 
+
+
+
+####3000
+polygons_proj_sub_3000 <- polygons_proj%>%
+  filter(FIRENUMBER >= 2000 & FIRENUMBER < 3000)
+
+# --- 3. Clip the Target Polygon ---
+# Perform the intersection using the projected layers
+
+###Upland
+clipped_Upland_proj_3000 <- st_intersection(polygons_proj_sub_3000, Upland_buffer)
+
+# (Optional) Re-project back to WGS84 for mapping or storage
+clipped_Upland_wgs84_3000 <- st_transform(clipped_Upland_proj_3000, 4326)
+
+clipped_Upland_wgs84_3000<- clipped_Upland_wgs84_3000%>%
+  mutate(Upland_area_m2 = st_area(.))%>%
+  mutate(Upland_area_acres = Upland_area_m2*0.000247105)
+
+
+st_write(clipped_Upland_wgs84_3000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_3000.gpkg", driver = "GPKG") 
+
+
+##Lowland
+
+clipped_Lowland_proj_3000 <- st_intersection(polygons_proj_sub_3000, Lowland_buffer)
+
+clipped_Lowland_wgs84_3000 <- st_transform(clipped_Lowland_proj_3000, 4326)
+
+clipped_Lowland_wgs84_3000 <- clipped_Lowland_wgs84_3000%>%
+  mutate(Lowland_area_m2 = st_area(.))%>%
+  mutate(Lowland_area_acres = Lowland_area_m2*0.000247105)
+
+st_write(clipped_Lowland_wgs84_3000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_3000.gpkg", driver = "GPKG") 
+
+
+####4000
+polygons_proj_sub_4000 <- polygons_proj%>%
+  filter(FIRENUMBER >= 3000 & FIRENUMBER < 4000)
+
+# --- 3. Clip the Target Polygon ---
+# Perform the intersection using the projected layers
+
+###Upland
+clipped_Upland_proj_4000 <- st_intersection(polygons_proj_sub_4000, Upland_buffer)
+
+# (Optional) Re-project back to WGS84 for mapping or storage
+clipped_Upland_wgs84_4000 <- st_transform(clipped_Upland_proj_4000, 4326)
+
+clipped_Upland_wgs84_4000 <- clipped_Upland_wgs84_4000%>%
+  mutate(Upland_area_m2 = st_area(.))%>%
+  mutate(Upland_area_acres = Upland_area_m2*0.000247105)
+
+
+st_write(clipped_Upland_wgs84_4000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_4000.gpkg", driver = "GPKG") 
+
+
+##Lowland
+
+clipped_Lowland_proj_4000 <- st_intersection(polygons_proj_sub_4000, Lowland_buffer)
+
+clipped_Lowland_wgs84_4000 <- st_transform(clipped_Lowland_proj_4000, 4326)
+
+clipped_Lowland_wgs84_4000 <- clipped_Lowland_wgs84_4000%>%
+  mutate(Lowland_area_m2 = st_area(.))%>%
+  mutate(Lowland_area_acres = Lowland_area_m2*0.000247105)
+
+st_write(clipped_Lowland_wgs84_4000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_4000.gpkg", driver = "GPKG") 
+
+
+####5000
+polygons_proj_sub_5000 <- polygons_proj%>%
   filter(FIRENUMBER >= 4000 & FIRENUMBER < 5000)
 
 # --- 3. Clip the Target Polygon ---
 # Perform the intersection using the projected layers
 
 ###Upland
-clipped_Upland_proj_5000 <- st_intersection(polygons_proj_sub, Upland_buffer)
+clipped_Upland_proj_5000 <- st_intersection(polygons_proj_sub_5000, Upland_buffer)
 
 # (Optional) Re-project back to WGS84 for mapping or storage
 clipped_Upland_wgs84_5000 <- st_transform(clipped_Upland_proj_5000, 4326)
@@ -86,12 +223,12 @@ clipped_Upland_wgs84_5000<- clipped_Upland_wgs84_5000%>%
   mutate(Upland_area_acres = Upland_area_m2*0.000247105)
 
 
-st_write(clipped_Upland_wgs84_5000, "/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Upland_5000.gpkg", driver = "GPKG") 
+st_write(clipped_Upland_wgs84_5000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_5000.gpkg", driver = "GPKG") 
 
 
 ##Lowland
 
-clipped_Lowland_proj_5000 <- st_intersection(polygons_proj_sub, Lowland_buffer)
+clipped_Lowland_proj_5000 <- st_intersection(polygons_proj_sub_5000, Lowland_buffer)
 
 clipped_Lowland_wgs84_5000 <- st_transform(clipped_Lowland_proj_5000, 4326)
 
@@ -99,7 +236,11 @@ clipped_Lowland_wgs84_5000 <- clipped_Lowland_wgs84_5000%>%
   mutate(Lowland_area_m2 = st_area(.))%>%
   mutate(Lowland_area_acres = Lowland_area_m2*0.000247105)
 
-st_write(clipped_Lowland_wgs84_5000, "/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Lowland_5000.gpkg", driver = "GPKG") 
+st_write(clipped_Lowland_wgs84_5000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_5000.gpkg", driver = "GPKG") 
+
+
+
+
 
 
 library(sf)
@@ -108,24 +249,24 @@ options(scipen=999)
 
 
 
-clipped_Upland_wgs84_1000 <- st_read("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Upland_1000.gpkg")
-clipped_Upland_wgs84_2000 <- st_read("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Upland_2000.gpkg")
-clipped_Upland_wgs84_3000 <- st_read("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Upland_3000.gpkg")
-clipped_Upland_wgs84_4000 <- st_read("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Upland_4000.gpkg")
-clipped_Upland_wgs84_5000 <- st_read("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Upland_5000.gpkg")
+clipped_Upland_wgs84_1000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_1000.gpkg")
+clipped_Upland_wgs84_2000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_2000.gpkg")
+clipped_Upland_wgs84_3000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_3000.gpkg")
+clipped_Upland_wgs84_4000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_4000.gpkg")
+clipped_Upland_wgs84_5000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_5000.gpkg")
 
-clipped_Lowland_wgs84_1000 <- st_read("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Lowland_1000.gpkg")
-clipped_Lowland_wgs84_2000 <- st_read("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Lowland_2000.gpkg")
-clipped_Lowland_wgs84_3000 <- st_read("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Lowland_3000.gpkg")
-clipped_Lowland_wgs84_4000 <- st_read("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Lowland_4000.gpkg")
-clipped_Lowland_wgs84_5000 <- st_read("/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/BillyHawkCreek_Lowland_5000.gpkg")
+clipped_Lowland_wgs84_1000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_1000.gpkg")
+clipped_Lowland_wgs84_2000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_2000.gpkg")
+clipped_Lowland_wgs84_3000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_3000.gpkg")
+clipped_Lowland_wgs84_4000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_4000.gpkg")
+clipped_Lowland_wgs84_5000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_5000.gpkg")
 
 
 
 
 
 clipped_Upland_wgs84 <- rbind(clipped_Upland_wgs84_1000,clipped_Upland_wgs84_2000, clipped_Upland_wgs84_3000, clipped_Upland_wgs84_4000,clipped_Upland_wgs84_5000)
-clipped_Lowland_wgs84 <- rbind(clipped_Lowland_wgs84_1000,clipped_Lowland_wgs84_2000, clipped_Lowland_wgs84_3000, clipped_Lowland_wgs84_34000,clipped_Lowland_wgs84_5000)
+clipped_Lowland_wgs84 <- rbind(clipped_Lowland_wgs84_1000,clipped_Lowland_wgs84_2000, clipped_Lowland_wgs84_3000, clipped_Lowland_wgs84_4000,clipped_Lowland_wgs84_5000)
 
 
 ###### Creating an option with areas totals for upland vs lowland as columns for each ensemble perimeter
@@ -149,20 +290,20 @@ clipped_Upland_wgs84$Upland_area_acres <- as.numeric(clipped_Upland_wgs84$Upland
 ############ Check with mapping the clipped perimeters 
 ### Use a subset of polygons to map 
 
-polygons_sub <- polygons%>%
-  filter(FIRENUMBER < 50)
-
-clipped_Upland_wgs84_sub <- clipped_Upland_wgs84%>%
-  filter(FIRENUMBER < 50)
-
-clipped_Lowland_wgs84_sub <- clipped_Lowland_wgs84%>%
-  filter(FIRENUMBER < 50)
-
-ggplot() +
- geom_sf(data = polygons_sub, color = "black")+
- geom_sf(data = clipped_Upland_wgs84_sub, fill = "#FFEE8C",color = "#FFEE8C")+
- geom_sf(data = clipped_Lowland_wgs84_sub, fill = "#4fb9af", color = "#4fb9af")
-
+# polygons_sub <- polygons%>%
+#   filter(FIRENUMBER < 50)
+# 
+# clipped_Upland_wgs84_sub <- clipped_Upland_wgs84%>%
+#   filter(FIRENUMBER < 50)
+# 
+# clipped_Lowland_wgs84_sub <- clipped_Lowland_wgs84%>%
+#   filter(FIRENUMBER < 50)
+# 
+# ggplot() +
+#  #geom_sf(data = polygons_sub, color = "black")+
+#  geom_sf(data = clipped_Upland_wgs84_sub, fill = "#FFEE8C",color = "#FFEE8C")+
+#  geom_sf(data = clipped_Lowland_wgs84_sub, fill = "#4fb9af", color = "#4fb9af")
+# 
 
 
 ##Create a combined CSV file with both the areas of upland and lowland burn areas for each perimeter. Remove the geometry variable 
@@ -191,13 +332,21 @@ clipped_landform_wgs84_csv <- clipped_landform_wgs84_csv%>%
 
 ###Write the CSV file 
 
-write.csv(clipped_landform_wgs84_csv,"/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Data/Counterfactual_landform/Landform_BillyHawkCreek.csv")
+write.csv(clipped_landform_wgs84_csv,"Data/Counterfactual_landform/Landform_TreatIsland.csv")
 
 
 
 
 
 
+
+
+
+
+
+
+
+###Old Scripts 
 ####################### Clip the final files so they are not too big 
 clipped_Upland_wgs84_1 <- clipped_Upland_wgs84%>%
   filter(FIRENUMBER < 2500)
