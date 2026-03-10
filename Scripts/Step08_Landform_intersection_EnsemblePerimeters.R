@@ -9,7 +9,7 @@ options(scipen = 999)
 
 ##Load Data 
 #Perimeter Data
-polygons = st_read("/Users/kmathes/Desktop/FSPro_Runs/2010_TreatIsland_valid.shp")%>%
+polygons = st_read("/Users/kmathes/Desktop/FSPro_Runs/2019_OlnesPond_valid.shp")%>%
   st_transform(crs = 3338)
 
 # ##Find the NA valid fires 
@@ -23,7 +23,7 @@ polygons = st_read("/Users/kmathes/Desktop/FSPro_Runs/2010_TreatIsland_valid.shp
   
 
 # Load the Landform point csvs 
-Upland  <- read.csv("Data/Counterfactual_landform_classification/TreatIsland_Upland.csv")
+Upland  <- read.csv("Data/Counterfactual_landform_classification/OlnesPond_Upland.csv")
   
 # Convert points to an sf object with the same CRS
 Upland_sf <- st_as_sf(Upland, coords = c("lon", "lat"), crs = 4326)
@@ -39,7 +39,7 @@ target_crs <- 32615
 Upland_sf_proj <- st_transform(Upland_sf, target_crs)
 
 # Load the Landform point csv 
-Lowland  <- read.csv("Data/Counterfactual_landform_classification/TreatIsland_Lowland.csv")
+Lowland  <- read.csv("Data/Counterfactual_landform_classification/OlnesPond_Lowland.csv")
 
 # Convert points to an sf object with the same CRS
 Lowland_sf <- st_as_sf(Lowland, coords = c("lon", "lat"), crs = 4326)
@@ -87,7 +87,7 @@ clipped_Upland_wgs84_1000<- clipped_Upland_wgs84_1000%>%
   mutate(Upland_area_acres = Upland_area_m2*0.000247105)
 
 
-st_write(clipped_Upland_wgs84_1000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_1000.gpkg", driver = "GPKG") 
+st_write(clipped_Upland_wgs84_1000, "Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Upland_1000.gpkg", driver = "GPKG") 
 
 
 ##Lowland
@@ -100,7 +100,7 @@ clipped_Lowland_wgs84_1000 <- clipped_Lowland_wgs84_1000%>%
   mutate(Lowland_area_m2 = st_area(.))%>%
   mutate(Lowland_area_acres = Lowland_area_m2*0.000247105)
 
-st_write(clipped_Lowland_wgs84_1000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_1000.gpkg", driver = "GPKG") 
+st_write(clipped_Lowland_wgs84_1000, "Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Lowland_1000.gpkg", driver = "GPKG") 
 
 
 ####2000
@@ -121,7 +121,7 @@ clipped_Upland_wgs84_2000<- clipped_Upland_wgs84_2000%>%
   mutate(Upland_area_acres = Upland_area_m2*0.000247105)
 
 
-st_write(clipped_Upland_wgs84_2000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_2000.gpkg", driver = "GPKG") 
+st_write(clipped_Upland_wgs84_2000, "Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Upland_2000.gpkg", driver = "GPKG") 
 
 
 ##Lowland
@@ -133,7 +133,7 @@ clipped_Lowland_wgs84_2000 <- clipped_Lowland_wgs84_2000%>%
   mutate(Lowland_area_m2 = st_area(.))%>%
   mutate(Lowland_area_acres = Lowland_area_m2*0.000247105)
 
-st_write(clipped_Lowland_wgs84_2000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_2000.gpkg", driver = "GPKG") 
+st_write(clipped_Lowland_wgs84_2000, "Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Lowland_2000.gpkg", driver = "GPKG") 
 
 
 
@@ -155,7 +155,7 @@ clipped_Upland_wgs84_3000<- clipped_Upland_wgs84_3000%>%
   mutate(Upland_area_acres = Upland_area_m2*0.000247105)
 
 
-st_write(clipped_Upland_wgs84_3000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_3000.gpkg", driver = "GPKG") 
+st_write(clipped_Upland_wgs84_3000, "Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Upland_3000.gpkg", driver = "GPKG") 
 
 
 ##Lowland
@@ -168,7 +168,7 @@ clipped_Lowland_wgs84_3000 <- clipped_Lowland_wgs84_3000%>%
   mutate(Lowland_area_m2 = st_area(.))%>%
   mutate(Lowland_area_acres = Lowland_area_m2*0.000247105)
 
-st_write(clipped_Lowland_wgs84_3000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_3000.gpkg", driver = "GPKG") 
+st_write(clipped_Lowland_wgs84_3000, "Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Lowland_3000.gpkg", driver = "GPKG") 
 
 
 ####4000
@@ -189,7 +189,7 @@ clipped_Upland_wgs84_4000 <- clipped_Upland_wgs84_4000%>%
   mutate(Upland_area_acres = Upland_area_m2*0.000247105)
 
 
-st_write(clipped_Upland_wgs84_4000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_4000.gpkg", driver = "GPKG") 
+st_write(clipped_Upland_wgs84_4000, "Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Upland_4000.gpkg", driver = "GPKG") 
 
 
 ##Lowland
@@ -202,7 +202,7 @@ clipped_Lowland_wgs84_4000 <- clipped_Lowland_wgs84_4000%>%
   mutate(Lowland_area_m2 = st_area(.))%>%
   mutate(Lowland_area_acres = Lowland_area_m2*0.000247105)
 
-st_write(clipped_Lowland_wgs84_4000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_4000.gpkg", driver = "GPKG") 
+st_write(clipped_Lowland_wgs84_4000, "Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Lowland_4000.gpkg", driver = "GPKG") 
 
 
 ####5000
@@ -223,7 +223,7 @@ clipped_Upland_wgs84_5000<- clipped_Upland_wgs84_5000%>%
   mutate(Upland_area_acres = Upland_area_m2*0.000247105)
 
 
-st_write(clipped_Upland_wgs84_5000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_5000.gpkg", driver = "GPKG") 
+st_write(clipped_Upland_wgs84_5000, "Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Upland_5000.gpkg", driver = "GPKG") 
 
 
 ##Lowland
@@ -236,7 +236,7 @@ clipped_Lowland_wgs84_5000 <- clipped_Lowland_wgs84_5000%>%
   mutate(Lowland_area_m2 = st_area(.))%>%
   mutate(Lowland_area_acres = Lowland_area_m2*0.000247105)
 
-st_write(clipped_Lowland_wgs84_5000, "Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_5000.gpkg", driver = "GPKG") 
+st_write(clipped_Lowland_wgs84_5000, "Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Lowland_5000.gpkg", driver = "GPKG") 
 
 
 
@@ -249,17 +249,17 @@ options(scipen=999)
 
 
 
-clipped_Upland_wgs84_1000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_1000.gpkg")
-clipped_Upland_wgs84_2000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_2000.gpkg")
-clipped_Upland_wgs84_3000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_3000.gpkg")
-clipped_Upland_wgs84_4000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_4000.gpkg")
-clipped_Upland_wgs84_5000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Upland_5000.gpkg")
+clipped_Upland_wgs84_1000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Upland_1000.gpkg")
+clipped_Upland_wgs84_2000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Upland_2000.gpkg")
+clipped_Upland_wgs84_3000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Upland_3000.gpkg")
+clipped_Upland_wgs84_4000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Upland_4000.gpkg")
+clipped_Upland_wgs84_5000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Upland_5000.gpkg")
 
-clipped_Lowland_wgs84_1000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_1000.gpkg")
-clipped_Lowland_wgs84_2000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_2000.gpkg")
-clipped_Lowland_wgs84_3000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_3000.gpkg")
-clipped_Lowland_wgs84_4000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_4000.gpkg")
-clipped_Lowland_wgs84_5000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/TreatIsland_Lowland_5000.gpkg")
+clipped_Lowland_wgs84_1000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Lowland_1000.gpkg")
+clipped_Lowland_wgs84_2000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Lowland_2000.gpkg")
+clipped_Lowland_wgs84_3000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Lowland_3000.gpkg")
+clipped_Lowland_wgs84_4000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Lowland_4000.gpkg")
+clipped_Lowland_wgs84_5000 <- st_read("Data/Counterfactual_landform/Partial_shapefiles/OlnesPond_Lowland_5000.gpkg")
 
 
 
@@ -310,11 +310,17 @@ clipped_Upland_wgs84$Upland_area_acres <- as.numeric(clipped_Upland_wgs84$Upland
 clipped_Upland_wgs84_csv <- clipped_Upland_wgs84%>%
   st_drop_geometry()
 
+# write.csv(clipped_Upland_wgs84_csv, "Data/Counterfactual_landform/Partial_shapefiles/NorthWhakatna_Upland.csv")
+# 
+# clipped_Upland_wgs84_csv <- read.csv("Data/Counterfactual_landform/Partial_shapefiles/NorthWhakatna_Upland.csv")%>%
+#   dplyr::select(!X)%>%
+#   dplyr::select(!Valid)
+
 clipped_Lowland_wgs84_csv <- clipped_Lowland_wgs84%>%
   st_drop_geometry()
 
 
-clipped_landform_wgs84_csv <- full_join(clipped_Upland_wgs84_csv, clipped_Lowland_wgs84_csv , by = c("FIRENUMBER", "SIZE_ACRES", "Valid"))
+clipped_landform_wgs84_csv <- full_join(clipped_Upland_wgs84_csv, clipped_Lowland_wgs84_csv , by = c("FIRENUMBER", "SIZE_ACRES"))
 
 clipped_landform_wgs84_csv[is.na(clipped_landform_wgs84_csv)] <- 0
 
@@ -332,7 +338,7 @@ clipped_landform_wgs84_csv <- clipped_landform_wgs84_csv%>%
 
 ###Write the CSV file 
 
-write.csv(clipped_landform_wgs84_csv,"Data/Counterfactual_landform/Landform_TreatIsland.csv")
+write.csv(clipped_landform_wgs84_csv,"Data/Counterfactual_landform/Landform_OlnesPond.csv")
 
 
 

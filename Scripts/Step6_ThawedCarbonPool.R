@@ -15,13 +15,13 @@ library(terra)
 ##Upload the carbon storage estimates 
 
 ##Carbon storage 0-50
-carbon_100 <- terra::rast("/Users/kmathes/Desktop/DATA/palmtag-2022-spatial-1/upscaled-SOC-storage-0-100-cm.tif")
+carbon_50 <- terra::rast("/Users/kmathes/Desktop/DATA/palmtag-2022-spatial-1/upscaled-SOC-storage-0-50-cm.tif")
 
 ##Transform the CRS of the raster file 
-ext <- ext(carbon_100)
+ext <- ext(carbon_50)
 max_x <- xmax(ext)
-carbon_100 <- terra::project(carbon_100, "epsg:4326")
-plot(carbon_100)
+carbon_50 <- terra::project(carbon_50, "epsg:4326")
+plot(carbon_50)
 
 ##Write the new raster file
 writeRaster(carbon_100, "/Users/kmathes/Desktop/PermafrostThaw/TransientThaw/Output/palmtag_SOC_1_100.tif", overwrite = TRUE) 

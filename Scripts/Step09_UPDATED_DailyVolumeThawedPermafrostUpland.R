@@ -15,28 +15,32 @@ options(scipen = 999)
 ####Step 1: fire perimeter (m2) Upload the counterfactual upland parts of the ensemble perimeters (Upland vs lowland) and 
 
 ###########DATA Upload (THIS DOES CHANGE)
-Upland_perimeter <- read.csv("Data/Counterfactual_landform/Landform_BrooksCreek.csv")%>%
+Upland_perimeter <- read.csv("Data/Counterfactual_landform/Landform_Huslia1.csv")%>%
   dplyr::select(FIRENUMBER,SIZE_ACRES,Upland_area_acres_adjust)%>%
   rename(Upland_perimeter_acres = Upland_area_acres_adjust)%>%
   mutate(Upland_perimeter_m2 = Upland_perimeter_acres*4046.86)
 
 ###########DATA Upload (THIS DOES CHANGE)
-Talik_perimeter <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Output/Counterfactual_Talik_perimeters_V2/Intersections/VeryHigh/Talik_perimeter_v2_BrooksCreek_VeryHigh.csv")
+Talik_perimeter <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Output/Counterfactual_Talik_perimeters_V2/Intersections/VeryHigh/Talik_perimeter_v2_Huslia1_VeryHigh.csv")
 ######################
 
 Upland_perimeter <- merge(Upland_perimeter, Talik_perimeter, by = c("FIRENUMBER", "SIZE_ACRES"))%>%
-  mutate(Upland_perimeter_m2_noTalik = Upland_perimeter_m2 - talik_area_m2)%>%
-  dplyr::select(FIRENUMBER,Upland_perimeter_m2_noTalik )
+  mutate(Upland_perimeter_m2_noTalik = Upland_perimeter_m2 - talik_area_m2)
+  #dplyr::select(FIRENUMBER,Upland_perimeter_m2_noTalik )
+
+Upland_perimeter_noneg <- Upland_perimeter%>%
+  mutate(Upland_perimeter_m2_noTalik_noneg = case_when(Upland_perimeter_m2_noTalik < 0 ~ 0, 
+                                                       Upland_perimeter_m2_noTalik >= 0 ~ Upland_perimeter_m2_noTalik))
 ######################
 
 #### Step 2: Upload the percent change daily fire-induced change in active layer percent for 50 years post-fire 
 
 ########Data upload (THIS DOES CHANGE): Removing year 0 since start of fire because it does not make sense 
-ALD_daily_change_upland <- read.csv("Output/UpdateWeibullPercentChange_Range/Predicted_ALD_change_upland_percentchange_max.csv")
+ALD_daily_change_upland <- read.csv("Output/UpdateWeibullPercentChange_Range/Predicted_ALD_change_upland_percentchange_mean.csv")
 ###############
 
 ###########DATA Upload (THIS DOES CHANGE)
-CarbonDensity <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Output/Counterfactual_CarbonDensity/BrooksCreek_CarbonDensityIntersectionTotal.csv")%>%
+CarbonDensity <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Output/Counterfactual_CarbonDensity/CrowLake_CarbonDensityIntersectionTotal.csv")%>%
   dplyr::select(FIRENUMBER, carbon_100)
 ##############
 
@@ -50,7 +54,7 @@ ALD_daily_change_upland_sub <- ALD_daily_change_upland%>%
 ### Add the first day of ALD which is 0 
 
 ################DATA UPLOAD (THIS DOES CHANGE)
-ALT_baseline <- read.csv("Data/Counterfactual_ALT_Baseline/ALT_counterfactual_Intersections/BrooksCreek_ALT_Baseline_Intersection.csv")%>%
+ALT_baseline <- read.csv("Data/Counterfactual_ALT_Baseline/ALT_counterfactual_Intersections/CrowLake_ALT_Baseline_Intersection.csv")%>%
   dplyr::select(FIRENUMBER, SIZE_ACRES, mean)%>%
   rename(ALT_baseline_last = mean)%>%
   mutate(ALT_baseline_first = 0)%>%
@@ -102,7 +106,7 @@ ALT_baseline_tsf_allDOY <- ALT_baseline_tsf_allDOY%>%
   mutate(daily_ALD_change = (a*(Predicted_Doy^2)) + (b*Predicted_Doy) + c)
 
 ALT_baseline_tsf_allDOY_1 <- ALT_baseline_tsf_allDOY%>%
-  filter(FIRENUMBER == 500)
+  filter(FIRENUMBER == 50)
 
 ggplot(ALT_baseline_tsf_allDOY_1, aes(x = Predicted_Doy, y = daily_ALD_change))+
   geom_point() +
@@ -149,7 +153,7 @@ Daily_carbon_pool_kg_test <- Daily_carbon_pool_kg%>%
   filter(FIRENUMBER == 200)%>%
   filter(tsf == 1)%>%
   mutate(DailyCarbonLossPercent = 0.011627907)%>%
-  mutate(DailyCarbonLoss_kg = (DailyCarbonLossPercent*Daily_carbon_pool_kg)/100)
+  mutate(DailyCarbonLoss_kg = (DailyCarbonLossPercent*Daily_carbon_pool_kg)/100) ### This should be a case when and decide if we use the organic or mineral percent based on the soil depth 
 
 #######Step 2: Upload the Gerrevink data 
 Gerrevink <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Data/CarbonDensity/Gerrevink_percentcarbonloss.csv")
@@ -179,9 +183,21 @@ Annual_carbon_pool_kg_withloss_summary <- Daily_carbon_pool_kg_withloss%>%
 
 Total50yr_carbon_pool_kg_withloss_summary <- Daily_carbon_pool_kg_withloss%>%
   group_by(FIRENUMBER)%>%
-  summarize(Total50yrCarbonLoss_kg = sum(DailyCarbonLoss_kg))
+  summarize(Total50yrCarbonLoss_kg = sum(DailyCarbonLoss_kg))%>%
+  mutate(FireName = "Crow Lake")%>%
+  mutate(Landform = "Upland")
+
+# Total50yr_carbon_pool_kg_withloss_summary <- Total50yr_carbon_pool_kg_withloss_summary%>%
+#   filter(!is.na(Total50yrCarbonLoss_kg))
 
 median(Total50yr_carbon_pool_kg_withloss_summary$Total50yrCarbonLoss_kg)
 
-write_csv(Total50yr_carbon_pool_kg_withloss_summary,"Output/CarbonLoss/BrookCreek_High_Upland.csv")
+Summary(Total50yr_carbon_pool_kg_withloss_summary)
 
+
+#write_csv(Total50yr_carbon_pool_kg_withloss_summary,"Output/CarbonLoss/CrowLake_High_Upland.csv")
+
+
+
+Total50yr_carbon_pool_kg_withloss_summary_perarea <- Total50yr_carbon_pool_kg_withloss_summary_perarea %>%
+  mutate(perarea = Total50yrCarbonLoss_kg/Lowland_perimeter_m2)

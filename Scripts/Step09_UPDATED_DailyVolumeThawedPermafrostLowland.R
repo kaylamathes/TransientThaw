@@ -1,5 +1,5 @@
 ###updating Step 09 
-###Upland Only 
+###Lowland Only 
 library(tidyverse)
 library(sf)
 library(ggplot2)
@@ -13,7 +13,7 @@ options(scipen = 999)
 ####Step 1: fire perimeter (m2) Upload the counterfactual lowland parts of the ensemble perimeters (Upland vs lowland) and 
 
 ###########DATA Upload (THIS DOES CHANGE)
-Lowland_perimeter <- read.csv("Data/Counterfactual_landform/Landform_TwomileLake.csv")%>%
+Lowland_perimeter <- read.csv("Data/Counterfactual_landform/Landform_DiscoveryCreek.csv")%>%
   dplyr::select(FIRENUMBER,SIZE_ACRES,Lowland_area_acres_adjust)%>%
   rename(Lowland_perimeter_acres = Lowland_area_acres_adjust)%>%
   mutate(Lowland_perimeter_m2 = Lowland_perimeter_acres*4046.86)
@@ -23,11 +23,11 @@ Lowland_perimeter <- read.csv("Data/Counterfactual_landform/Landform_TwomileLake
 #### Step 2: Upload the percent change daily fire-induced change in active layer percent for 50 years post-fire 
 
 ########Data upload (THIS DOES CHANGE)
-ALD_daily_change_lowland <- read.csv("Output/UpdateWeibullPercentChange_Range/Predicted_ALD_change_lowland_percentchange_max.csv")
+ALD_daily_change_lowland <- read.csv("Output/UpdateWeibullPercentChange_Range/Predicted_ALD_change_lowland_percentchange_mean.csv")
 ###############
 
 ###########DATA Upload (THIS DOES CHANGE)
-CarbonDensity <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Output/Counterfactual_CarbonDensity/TwomileLake_CarbonDensityIntersectionTotal.csv")%>%
+CarbonDensity <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Output/Counterfactual_CarbonDensity/DiscoveryCreek_CarbonDensityIntersectionTotal.csv")%>%
   dplyr::select(FIRENUMBER, carbon_100, SIZE_ACRES)
 ##############
 
@@ -40,7 +40,7 @@ ALD_daily_change_lowland_sub <- ALD_daily_change_lowland%>%
 ### Add the first day of ALD which is 0 
 
 ################DATA UPLOAD (THIS DOES CHANGE)
-ALT_baseline <- read.csv("Data/Counterfactual_ALT_Baseline/ALT_counterfactual_Intersections/TwomileLake_ALT_Baseline_Intersection.csv")%>%
+ALT_baseline <- read.csv("Data/Counterfactual_ALT_Baseline/ALT_counterfactual_Intersections/DiscoveryCreek_ALT_Baseline_Intersection.csv")%>%
   dplyr::select(FIRENUMBER, SIZE_ACRES, mean)%>%
   rename(ALT_baseline_last = mean)%>%
   mutate(ALT_baseline_first = 0)%>%
@@ -89,12 +89,12 @@ ALT_baseline_tsf_allDOY <- left_join(ALT_baseline_tsf_allDOY,  ALT_baseline_tsf,
 ALT_baseline_tsf_allDOY <- ALT_baseline_tsf_allDOY%>%
   mutate(daily_ALD_change = (a*(Predicted_Doy^2)) + (b*Predicted_Doy) + c)
 
-ALT_baseline_tsf_allDOY_1 <- ALT_baseline_tsf_allDOY%>%
-  filter(FIRENUMBER == 501)
-
-ggplot(ALT_baseline_tsf_allDOY_1, aes(x = Predicted_Doy, y = daily_ALD_change))+
-  geom_point() +
-  facet_wrap(~tsf)
+# ALT_baseline_tsf_allDOY_1 <- ALT_baseline_tsf_allDOY%>%
+#   filter(FIRENUMBER == 501)
+# 
+# ggplot(ALT_baseline_tsf_allDOY_1, aes(x = Predicted_Doy, y = daily_ALD_change))+
+#   geom_point() +
+#   facet_wrap(~tsf)
 
 
 #### Step 04: Calculate the fire-thawed daily ALT thickness 
@@ -114,22 +114,46 @@ ALT_daily_fire_change <- ALT_daily_fire_change%>%
   mutate(Daily_fire_change_cm = (predicted_ALD_percentchange_noneg*daily_ALD_change)/100)%>%
   mutate(Daily_fire_change_m = Daily_fire_change_cm/100)
 
+###Step 05: Separate out the depths and merge with the C fraction data to allign daily volumes that will be subjected to mineral or organic C loss curve 
+###Upload the C fraction 
 
-##Step 05: Calculate the Daily ALT volume (m3)
+C_Fraction <- read.csv("Data/Counterfactual_CarbonFraction_Intersection/DiscoveryCreek_SoilOrganicCarbon_Intersection.csv")%>%
+  dplyr::select(FIRENUMBER, SIZE_ACRES, percentC_0_5, percentC_5_15)
+
+
+### Create Two depth colums to break it down by 5cm or less or more 
+ALT_daily_fire_change <- left_join(ALT_daily_fire_change, C_Fraction, by = c("FIRENUMBER", "SIZE_ACRES"))
+
+##Separate Depths into .05m or less and more than .05m
+ALT_daily_fire_change <- ALT_daily_fire_change%>%
+  mutate(Daily_fire_change_m_Depth1 = case_when(Daily_fire_change_m <= 0.05 ~ Daily_fire_change_m, 
+                                                Daily_fire_change_m > 0.05 ~ 0.05))%>%
+  mutate(Daily_fire_change_m_Depth2 = case_when(Daily_fire_change_m <= 0.05 ~ 0, 
+                                                Daily_fire_change_m > 0.05 ~ (Daily_fire_change_m - 0.05 )))
+
+##Step 06: Calculate the Daily ALT volume (m3)
 ALT_daily_fire_change_volume <- left_join(ALT_daily_fire_change, Lowland_perimeter, by = c("FIRENUMBER", "SIZE_ACRES"))
 
 
 ALT_daily_fire_change_volume <-  ALT_daily_fire_change_volume%>%
-  mutate(Daily_ALT_change_volume_m3 = Lowland_perimeter_m2*Daily_fire_change_m)
+  mutate(Daily_ALT_change_volume_m3 = Lowland_perimeter_m2*Daily_fire_change_m)%>%
+  mutate(Daily_ALT_change_volume_m3_Depth1 = Lowland_perimeter_m2*Daily_fire_change_m_Depth1)%>%
+  mutate(Daily_ALT_change_volume_m3_Depth2 = Lowland_perimeter_m2*Daily_fire_change_m_Depth2)
+
+#write.csv(ALT_daily_fire_change_volume, "Output/DailyVolumeThawedpermafrost/DiscoveryCreek_Lowland_medium.csv")
 
 
+
+##############################
 ##Step 1: Upload the Carbon Density data (Start with the top 100 cm)
 ######################
 
 Daily_carbon_pool_kg = left_join(ALT_daily_fire_change_volume,CarbonDensity, by = c("FIRENUMBER", "SIZE_ACRES"))
 
 Daily_carbon_pool_kg <- Daily_carbon_pool_kg%>%
-  mutate(Daily_carbon_pool_kg = Daily_ALT_change_volume_m3*carbon_100)
+  mutate(Daily_carbon_pool_kg_Depth1 = Daily_ALT_change_volume_m3_Depth1*carbon_100)%>%
+  mutate(Daily_carbon_pool_kg_Depth2 = Daily_ALT_change_volume_m3_Depth2*carbon_100)
+  
 
 # Daily_carbon_pool_kg_test <- Daily_carbon_pool_kg%>%
 #   filter(FIRENUMBER == 200)%>%
@@ -143,7 +167,8 @@ Gerrevink <- read.csv("/Users/kmathes/Desktop/ProgressiveThaw/Data/CarbonDensity
 ###We are going to start by split up the percent annual loss into a daily percent based on the number of frost-free days (or the growing season), which is 172 to start (This might need to change)
 
 Gerrevink <- Gerrevink%>%
-  mutate(DailyPercent = percentCarbonLoss_Mineral/172)%>%
+  mutate(DailyPercent_Mineral = percentCarbonLoss_Mineral/172)%>%
+  mutate(DailyPercent_Organic = percentCarbonLoss_organic/172)%>%
   filter(YearsSinceFire_or_ThawInitation != 50)%>%
   mutate(tsf = 1:50 )
 
@@ -166,7 +191,7 @@ Annual_carbon_pool_kg_withloss_summary <- Daily_carbon_pool_kg_withloss%>%
 Total50yr_carbon_pool_kg_withloss_summary <- Daily_carbon_pool_kg_withloss%>%
   group_by(FIRENUMBER)%>%
   summarize(Total50yrCarbonLoss_kg = sum(DailyCarbonLoss_kg))%>%
-  mutate(FireName = "Twomile Lake")%>%
+  mutate(FireName = "Crow Lake")%>%
   mutate(Landform = "Lowland")
 
 #Total50yr_carbon_pool_kg_withloss_summary <- Total50yr_carbon_pool_kg_withloss_summary%>%
@@ -174,7 +199,12 @@ Total50yr_carbon_pool_kg_withloss_summary <- Daily_carbon_pool_kg_withloss%>%
 
 median(Total50yr_carbon_pool_kg_withloss_summary$Total50yrCarbonLoss_kg)
 
-write_csv(Total50yr_carbon_pool_kg_withloss_summary,"Output/CarbonLoss/TwomileLake_High_Lowland.csv")
+#write_csv(Total50yr_carbon_pool_kg_withloss_summary,"Output/CarbonLoss/CrowLake_High_Lowland.csv")
 
+##per area 
+Total50yr_carbon_pool_kg_withloss_summary_perarea <- merge(Total50yr_carbon_pool_kg_withloss_summary, Lowland_perimeter, by = ("FIRENUMBER"))
+
+Total50yr_carbon_pool_kg_withloss_summary_perarea <- Total50yr_carbon_pool_kg_withloss_summary_perarea %>%
+  mutate(perarea = Total50yrCarbonLoss_kg/Lowland_perimeter_m2)
 
 
