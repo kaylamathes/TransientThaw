@@ -6,9 +6,9 @@
 
 ### 3. Model daily percent changes in fire-cause thaw depth (Not spatially explicit) 
 
-### 4. Calculate daily volume of thawed permafrost for up to 50 years post fire 
+### 4. Calculate daily volume of thawed permafrost for up to 50 years post fire (spatially explicit)
 
-### 5: Convert from daily fire-thawed permafrost volume to carbon pool vulnerable to emissions using the Palmtag Carbon density at different depths 
+### 5: Convert from daily fire-thawed permafrost volume to carbon pool vulnerable to emissions using the Palmtag Carbon density at different depths (spatially explicit)
 
-### 6: Apply Gerrevinks emission percent to the daily thawed carbon pool and sum to total carbon loss over 50 years post-fire. 
+### 6: Apply Gerrevinks emission percent to the daily thawed carbon pool and sum to total carbon loss over 50 years post-fire (spatially explicit)
 
