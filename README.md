@@ -10,31 +10,39 @@ Separate remaining area into Upland and Lowland
       Lowland: -5 < Topographic Position Index < 5
 
 Determine which landform type by burn point: 
-Script: EE: Step 07_Landform_determination: 
-Inputs: Burn points from all counterfactual fires: 
-Location: GEE Assets
+
+Script: EE: Step 07_Landform_determination
+
+Inputs: Burn points from all counterfactual fires
+	Location: GEE Assets
+
 Output: csvs for landform determination (Lowland = 0, Upland = 1) for each FABDEM tile. 
-Location: Google cloud bucket (TransientThaw/Landform_classification_counterfactual_perimeter/)
+	Location: Google cloud bucket (TransientThaw/Landform_classification_counterfactual_perimeter/)
 
 Combine all burn point landform classification files into one upland and one lowland csv (burn point) for each fire 
+
 Script: R: Step07_Landform_classification
+
 Inputs: csvs for landform determination (Lowland = 0, Upland = 1) for each FABDEM tile
-Location: Google cloud bucket (TransientThaw/Landform_classification_counterfactual_perimeter/)
+	Location: Google cloud bucket (TransientThaw/Landform_classification_counterfactual_perimeter/)
+	
 Outputs: CSV for upland and lowland burn points for each fire. 
-Location:TransientThaw/Data/Counterfactual_landform_classification/
+	Location:TransientThaw/Data/Counterfactual_landform_classification/
 
 Run a spatial intersection to determine the area of upland and lowland for each counterfactual fire perimeter 
-Script: R: Step08_Landform_Intersection_ensembleperimeters 
+	Script: R: Step08_Landform_Intersection_ensembleperimeters 
 
-Inputs: CSV for upland and lowland burn points for each fire and valid counterfactual ensemble perimeter shapefiles.
-Location: TransientThaw/Data/Counterfactual_landform_classification/ 
-Location:  FsPro_Runs/
+	Inputs: CSV for upland and lowland burn points for each fire and valid counterfactual ensemble perimeter 
+	shapefiles.
+	Location: TransientThaw/Data/Counterfactual_landform_classification/ 
+	Location:  FsPro_Runs/
 
 Outputs: 
-Partial geometry files for the counterfactual fires by upland and lowlands (This is to help with the processing time for this task) 
-Location:"TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/
-CVS with the complete counterfactual perimeters breakdown of upland and lowland area 
-Location: "TransientThaw/Data/Counterfactual_landform/”
+	Partial geometry files for the counterfactual fires by upland and lowlands (This is to help with the 
+	processing time for this task) 
+		Location:"TransientThaw/Data/Counterfactual_landform/Partial_shapefiles/
+			CVS with the complete counterfactual perimeters breakdown of upland and lowland area 
+		Location: "TransientThaw/Data/Counterfactual_landform/”
 
 Status: In progress
 
